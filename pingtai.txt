@@ -1,0 +1,126 @@
+       //新增课程
+        function SaveKcglByJson() {
+            var option = {
+                serviceInfo: "Mysoft.Xpt.Services.KcglService.SaveKcglByJson",
+                data: {
+                    StrSyllabus: getKcJson(),
+                    CourseList: getSubKcJson(),
+                    DelCourseAllIds: appIframe.document.all("txtDelRowGUID").value,
+                    DoType: DoType,
+                    CourseGuids: CourseGuids
+                }
+            }
+            //post到服务端
+            var result = MapExt.postJSON(option);
+            //var result = MapExt.httpGet(option);
+            //alert(result.result);
+            if (result.result == "TRUE") {
+		            
+                var rdNum = Math.random();
+                var funcid;
+                if (document.all.__funcid && document.all.__funcid != "") {
+                    funcid = document.all.__funcid.value;
+                }
+		            
+                CourseGuids = "";
+                appForm.oid.value = result.oid;
+                document.all.__mode.value = 2;
+                DoType = 2;
+		           
+                if (document.all.__mode.value == 2) {
+                    var gridBar = appIframe.gridBar;
+                    for (i = 1; i < gridBar.rows.length; i++) {
+                        if (gridBar.rows[i].entity == 0) {
+                            gridBar.rows[i].entity == 1;
+                        }
+                    }
+                }
+                if (window.parent.opener != null) {
+                    window.parent.opener.Refresh();
+                    window.onload();
+                    window.appIframe.location.reload();
+                }
+                alert(result.resultMess);
+                return true;
+            }
+            else {
+                alert(result.resultMess);
+                return false;
+            }
+        }
+
+        function getKcJson() {
+            var kcData = null;
+            if (appForm.oid.value !== "") {
+                kcData = {
+                    SyllabusGUID: appForm.oid.value,
+                    Name: appForm.Name.value,
+                    SyllabusRemarks: appForm.SyllabusRemarks.value,
+                    PositionList: appForm.PositionList.value
+                }
+            }
+            else {
+                kcData = {
+                    Name: appForm.Name.value,
+                    SyllabusRemarks: appForm.SyllabusRemarks.value,
+                    PositionList: appForm.PositionList.value
+                }
+            }
+            //alert("appForm.oid.value="+appForm.oid.value);
+            return kcData;
+        }
+
+        function getSubKcJson() {
+            var gridBar = appIframe.gridBar;
+            var kcName, kcMs, oid;
+            var decEnryID = 0;
+            var Entity = -1;
+            var arrObj = new Array();
+            //alert("gridBar.rows.length="+gridBar.rows.length);
+            for (i = 1; i < gridBar.rows.length; i++) {
+                Entity = gridBar.rows[i].entity;
+                if (document.all.__mode.value == 2 && Entity == 0) {
+                    CourseGuids += gridBar.rows[i].oid + ";";
+                }
+                if (IsEmpty(gridBar.rows[i]) == true) {
+                    continue;
+                }
+                var sData = null;
+
+                if (gridBar.rows[i].oid != "") {
+                    if (gridBar.rows[i].SyllabusGUID != "") {
+                        sData = {
+                            CourseGUID: gridBar.rows[i].oid,
+                            SyllabusGUID: gridBar.rows[i].SyllabusGUID,
+                            Name: gridBar.rows[i].cells[1].children[0].value,
+                            CourseRemarks: gridBar.rows[i].cells[2].children[0].value
+                        }
+                    }
+                    else {
+                        sData = {
+                            CourseGUID: gridBar.rows[i].oid,
+                            Name: gridBar.rows[i].cells[1].children[0].value,
+                            CourseRemarks: gridBar.rows[i].cells[2].children[0].value
+                        }
+                    }
+
+                }
+                else {
+                    if (gridBar.rows[i].SyllabusGUID != "") {
+                        sData = {
+                            SyllabusGUID: gridBar.rows[i].SyllabusGUID,
+                            Name: gridBar.rows[i].cells[1].children[0].value,
+                            CourseRemarks: gridBar.rows[i].cells[2].children[0].value
+                        }
+                    }
+                    else {
+                        sData = {
+                            Name: gridBar.rows[i].cells[1].children[0].value,
+                            CourseRemarks: gridBar.rows[i].cells[2].children[0].value
+                        }
+                    }
+                }
+                arrObj.push(sData);
+            }
+            return arrObj;
+        }
